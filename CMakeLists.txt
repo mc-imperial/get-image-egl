@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 2.8)
 project(cpp)
 
 # Add "deps" to search prefix for convenience.
-set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR}/deps ${CMAKE_SOURCE_DIR}/deps ${CMAKE_PREFIX_PATH})
-
-message(STATUS ${CMAKE_PREFIX_PATH})
+set(CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/deps" "${CMAKE_SOURCE_DIR}/deps" "${CMAKE_PREFIX_PATH}")
+# The libraries have the "lib" prefix even on Windows.
+set(CMAKE_FIND_LIBRARY_PREFIXES "lib" "${CMAKE_FIND_LIBRARY_PREFIXES}")
 
 # Set rpath for Mac and Linux.
 if(APPLE)
