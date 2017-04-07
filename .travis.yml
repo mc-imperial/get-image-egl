@@ -1,0 +1,30 @@
+
+language: generic
+
+env:
+  global:
+    - CMAKE_GENERATOR="Unix Makefiles" CMAKE_OPTIONS=" "
+
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: required
+      env: BUILD_PLATFORM="Linux-x64"
+    - os: osx
+      osx_image: xcode7.3
+      env: BUILD_PLATFORM="Darwin-x64"
+
+install:
+  - buildscripts/1-install-deps-travis.sh
+  - export PATH="/data/bin:$PATH"
+
+script:
+  - CMAKE_BUILD_TYPE=Debug buildscripts/2-build-travis.sh
+  - CMAKE_BUILD_TYPE=Release buildscripts/2-build-travis.sh
+
+after_success:
+  - CMAKE_BUILD_TYPE=Debug buildscripts/3-release-travis.sh
+  - CMAKE_BUILD_TYPE=Release buildscripts/3-release-travis.sh
+
+
