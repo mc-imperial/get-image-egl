@@ -1,0 +1,8 @@
+/out/
+/.idea/
+/cmake-build-debug/
+/cmake-build-release/
+/c_cpp_properties.json
+/linux-out/
+/deps/
+
