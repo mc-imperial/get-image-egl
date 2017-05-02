@@ -6,6 +6,8 @@ project(cpp)
 set(CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/deps" "${CMAKE_SOURCE_DIR}/deps" "${CMAKE_PREFIX_PATH}")
 # The libraries have the "lib" prefix even on Windows.
 set(CMAKE_FIND_LIBRARY_PREFIXES "lib" "${CMAKE_FIND_LIBRARY_PREFIXES}")
+# Use c++11, this is compiler-agnostic (not GCC specific)
+set (CMAKE_CXX_STANDARD 11)
 
 # Set rpath for Mac and Linux.
 if(APPLE)
@@ -41,6 +43,5 @@ install(TARGETS get_image get_gl_info
 )
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "-Wall -std=c++11 ${CMAKE_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS "-Wall ${CMAKE_CXX_FLAGS}")
 endif()
-

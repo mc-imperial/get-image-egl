@@ -1,4 +1,3 @@
-
 #include "common.h"
 
 #define GL_GLEXT_PROTOTYPES
@@ -6,6 +5,8 @@
 #include "GLES/gl.h"
 #include "GLES2/gl2.h"
 
+#include <cstdlib>		// EXIT_SUCCESS, etc
+#include <cstdint>		// uint8_t, etc
 #include <iostream>
 #include <fstream>
 #include <sstream>
