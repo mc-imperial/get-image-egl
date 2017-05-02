@@ -13,6 +13,8 @@
 #include <vector>
 
 #include "lodepng.h"
+#include "json.hpp"
+using json = nlohmann::json;
 
 #define COMPILE_ERROR_EXIT_CODE (101)
 #define LINK_ERROR_EXIT_CODE (102)
@@ -125,6 +127,75 @@ int render(
   return EXIT_SUCCESS;
 }
 
+int setUniformsFromJSON(const std::string& jsonFilename, const GLuint& program) {
+  std::string jsonContent;
+  if (!readFile(jsonFilename, jsonContent)) {
+    return EXIT_FAILURE;
+  }
+  json j = json::parse(jsonContent);
+
+  for (json::iterator it = j.begin(); it != j.end(); ++it) {
+    std::string uniformName = it.key();
+    json uniformInfo = it.value();
+
+    // Check presence of func and args entries
+    if (uniformInfo.find("func") == uniformInfo.end()) {
+      std::cerr << "Error: malformed JSON: no \"func\" entry for uniform: " << uniformName << std::endl;
+      return EXIT_FAILURE;
+    }
+    if (uniformInfo.find("args") == uniformInfo.end()) {
+      std::cerr << "Error: malformed JSON: no \"args\" entry for uniform: " << uniformName << std::endl;
+      return EXIT_FAILURE;
+    }
+
+    // Get uniform location
+    GLint uniformLocation = glGetUniformLocation(program, uniformName.c_str());
+    CHECK_ERROR("After glGetUniformLocation");
+    if (uniformLocation == -1) {
+      std::cerr << "Warning: Cannot find uniform named: " << uniformName << std::endl;
+      continue;
+    }
+
+    // Dispatch to matching init function
+    std::string uniformFunc = uniformInfo["func"];
+
+    // FIXME: can we use a template to factor the following? Hugues
+    // thinks not since it would required the code to be expanded at
+    // runtime (not compilation time) from the string obtained when
+    // reading the JSON file. Proper meta-programming like in LISP could
+    // do it though.
+
+    // TODO: check that args has the good number of fields and type
+
+    if (uniformFunc == "glUniform1f") {
+      glUniform1f(uniformLocation, uniformInfo["args"][0]);
+    } else if (uniformFunc == "glUniform2f") {
+      glUniform2f(uniformLocation, uniformInfo["args"][0], uniformInfo["args"][1]);
+    } else if (uniformFunc == "glUniform3f") {
+      glUniform3f(uniformLocation, uniformInfo["args"][0], uniformInfo["args"][1], uniformInfo["args"][2]);
+    } else if (uniformFunc == "glUniform4f") {
+      glUniform4f(uniformLocation, uniformInfo["args"][0], uniformInfo["args"][1], uniformInfo["args"][2], uniformInfo["args"][3]);
+    }
+
+    else if (uniformFunc == "glUniform1i") {
+      glUniform1i(uniformLocation, uniformInfo["args"][0]);
+    } else if (uniformFunc == "glUniform2i") {
+      glUniform2i(uniformLocation, uniformInfo["args"][0], uniformInfo["args"][1]);
+    } else if (uniformFunc == "glUniform3i") {
+      glUniform3i(uniformLocation, uniformInfo["args"][0], uniformInfo["args"][1], uniformInfo["args"][2]);
+    } else if (uniformFunc == "glUniform4i") {
+      glUniform4i(uniformLocation, uniformInfo["args"][0], uniformInfo["args"][1], uniformInfo["args"][2], uniformInfo["args"][3]);
+    }
+
+    else {
+      std::cerr << "Error: unknown uniform init func: " << uniformFunc << std::endl;
+      return EXIT_FAILURE;
+    }
+    CHECK_ERROR("After uniform initialisation");
+  }
+
+  return EXIT_SUCCESS;
+}
 
 int main(int argc, char* argv[]) {
 
@@ -311,11 +382,18 @@ int main(int argc, char* argv[]) {
   glVertexAttribPointer(posAttribLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer);
 
+  std::string jsonFilename(fragment_shader);
+  jsonFilename.replace(jsonFilename.end()-4, jsonFilename.end(), "json");
+  int result = setUniformsFromJSON(jsonFilename, program);
+  if(result != EXIT_SUCCESS) {
+    return EXIT_FAILURE;
+  }
+  std::cerr << "Uniforms set successfully." << std::endl;
+
   int numFrames = 0;
   bool saved = false;
 
-
-  int result = render(
+  result = render(
       display,
       surface,
       width,
@@ -358,4 +436,3 @@ int main(int argc, char* argv[]) {
 
   return EXIT_SUCCESS;
 }
-
