@@ -127,6 +127,20 @@ int render(
   return EXIT_SUCCESS;
 }
 
+template<typename T>
+T *getArray(const json& j) {
+  T *a = new T[j.size()];
+  for (int i = 0; i < j.size(); i++) {
+    a[i] = j[i];
+  }
+  return a;
+}
+
+#define GLUNIFORM_ARRAYINIT(funcname, uniformloc, gltype, jsonarray)     \
+  gltype *a = getArray<gltype>(jsonarray.size()); \
+  funcname(uniformloc, jsonarray.size(), a); \
+  delete [] a
+
 int setUniformsFromJSON(const std::string& jsonFilename, const GLuint& program) {
   std::string jsonContent;
   if (!readFile(jsonFilename, jsonContent)) {
@@ -180,6 +194,38 @@ int setUniformsFromJSON(const std::string& jsonFilename, const GLuint& program) 
       glUniform3i(uniformLocation, args[0], args[1], args[2]);
     } else if (uniformFunc == "glUniform4i") {
       glUniform4i(uniformLocation, args[0], args[1], args[2], args[3]);
+    }
+
+    // Note: no "glUniformXui" variant in OpenGL ES
+
+    // else if (uniformFunc == "glUniform1ui") {
+    //   glUniform1ui(uniformLocation, args[0]);
+    // } else if (uniformFunc == "glUniform2ui") {
+    //   glUniform2ui(uniformLocation, args[0], args[1]);
+    // } else if (uniformFunc == "glUniform3ui") {
+    //   glUniform3ui(uniformLocation, args[0], args[1], args[2]);
+    // } else if (uniformFunc == "glUniform4ui") {
+    //   glUniform4ui(uniformLocation, args[0], args[1], args[2], args[3]);
+    // }
+
+    else if (uniformFunc == "glUniform1fv") {
+      GLUNIFORM_ARRAYINIT(glUniform1fv, uniformLocation, GLfloat, args);
+    } else if (uniformFunc == "glUniform2fv") {
+      GLUNIFORM_ARRAYINIT(glUniform2fv, uniformLocation, GLfloat, args);
+    } else if (uniformFunc == "glUniform3fv") {
+      GLUNIFORM_ARRAYINIT(glUniform3fv, uniformLocation, GLfloat, args);
+    } else if (uniformFunc == "glUniform4fv") {
+      GLUNIFORM_ARRAYINIT(glUniform4fv, uniformLocation, GLfloat, args);
+    }
+
+    else if (uniformFunc == "glUniform1iv") {
+      GLUNIFORM_ARRAYINIT(glUniform1iv, uniformLocation, GLint, args);
+    } else if (uniformFunc == "glUniform2iv") {
+      GLUNIFORM_ARRAYINIT(glUniform2iv, uniformLocation, GLint, args);
+    } else if (uniformFunc == "glUniform3iv") {
+      GLUNIFORM_ARRAYINIT(glUniform3iv, uniformLocation, GLint, args);
+    } else if (uniformFunc == "glUniform4iv") {
+      GLUNIFORM_ARRAYINIT(glUniform4iv, uniformLocation, GLint, args);
     }
 
     else {
