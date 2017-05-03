@@ -158,33 +158,28 @@ int setUniformsFromJSON(const std::string& jsonFilename, const GLuint& program) 
 
     // Dispatch to matching init function
     std::string uniformFunc = uniformInfo["func"];
-
-    // FIXME: can we use a template to factor the following? Hugues
-    // thinks not since it would required the code to be expanded at
-    // runtime (not compilation time) from the string obtained when
-    // reading the JSON file. Proper meta-programming like in LISP could
-    // do it though.
+    json args = uniformInfo["args"];
 
     // TODO: check that args has the good number of fields and type
 
     if (uniformFunc == "glUniform1f") {
-      glUniform1f(uniformLocation, uniformInfo["args"][0]);
+      glUniform1f(uniformLocation, args[0]);
     } else if (uniformFunc == "glUniform2f") {
-      glUniform2f(uniformLocation, uniformInfo["args"][0], uniformInfo["args"][1]);
+      glUniform2f(uniformLocation, args[0], args[1]);
     } else if (uniformFunc == "glUniform3f") {
-      glUniform3f(uniformLocation, uniformInfo["args"][0], uniformInfo["args"][1], uniformInfo["args"][2]);
+      glUniform3f(uniformLocation, args[0], args[1], args[2]);
     } else if (uniformFunc == "glUniform4f") {
-      glUniform4f(uniformLocation, uniformInfo["args"][0], uniformInfo["args"][1], uniformInfo["args"][2], uniformInfo["args"][3]);
+      glUniform4f(uniformLocation, args[0], args[1], args[2], args[3]);
     }
 
     else if (uniformFunc == "glUniform1i") {
-      glUniform1i(uniformLocation, uniformInfo["args"][0]);
+      glUniform1i(uniformLocation, args[0]);
     } else if (uniformFunc == "glUniform2i") {
-      glUniform2i(uniformLocation, uniformInfo["args"][0], uniformInfo["args"][1]);
+      glUniform2i(uniformLocation, args[0], args[1]);
     } else if (uniformFunc == "glUniform3i") {
-      glUniform3i(uniformLocation, uniformInfo["args"][0], uniformInfo["args"][1], uniformInfo["args"][2]);
+      glUniform3i(uniformLocation, args[0], args[1], args[2]);
     } else if (uniformFunc == "glUniform4i") {
-      glUniform4i(uniformLocation, uniformInfo["args"][0], uniformInfo["args"][1], uniformInfo["args"][2], uniformInfo["args"][3]);
+      glUniform4i(uniformLocation, args[0], args[1], args[2], args[3]);
     }
 
     else {
