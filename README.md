@@ -16,7 +16,7 @@ Run `get_image` on the provided `simple.frag` shader to test that it works. E.g.
 ./get_image --persist simple.frag
 ```
 
-#Note:
+Note:
 
 You should also have a file with the same name as the shader but with a .json extension.
 This file should only contain an "{}"
