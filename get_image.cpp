@@ -136,8 +136,8 @@ T *getArray(const json& j) {
   return a;
 }
 
-#define GLUNIFORM_ARRAYINIT(funcname, uniformloc, gltype, jsonarray)     \
-  gltype *a = getArray<gltype>(jsonarray.size()); \
+#define GLUNIFORM_ARRAYINIT(funcname, uniformloc, gltype, jsonarray) \
+  gltype *a = getArray<gltype>(jsonarray); \
   funcname(uniformloc, jsonarray.size(), a); \
   delete [] a
 
@@ -245,8 +245,8 @@ int main(int argc, char* argv[]) {
   EGLContext context = 0;
   EGLSurface surface = 0;
 
-  const int width = 640;
-  const int height = 480;
+  const int width = 256;
+  const int height = 256;
 
   bool res = init_gl(
       width,
