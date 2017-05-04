@@ -16,6 +16,11 @@ Run `get_image` on the provided `simple.frag` shader to test that it works. E.g.
 ./get_image --persist simple.frag
 ```
 
+Note:
+
+You should also have a file with the same name as the shader but with a .json extension.
+This file should only contain an "{}"
+
 ## Usage
 
 `./get_image <PATH_TO_FRAGMENT_SHADER>`
@@ -45,6 +50,12 @@ On Linux or OSX:
 ```bash
 bash buildscripts/1-install-deps-travis.sh
 ```
+
+Alternativly on Ubuntu you can:
+```bash
+sudo apt-get install libgles2-mesa-dev
+```
+
 
 (This will probably fail with an error at the last step, but all that matters is that the deps are created)
 
