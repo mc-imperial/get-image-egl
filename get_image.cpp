@@ -151,6 +151,23 @@ int setUniformsFromJSON(const std::string& jsonFilename, const GLuint& program) 
   }
   json j = json::parse(jsonContent);
 
+
+  GLint uniform_name_max_length = 0;
+  glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &uniform_name_max_length);
+  CHECK_ERROR("glGetProgramiv");
+  GLchar *uniform_name = new GLchar[uniform_name_max_length];
+  GLint uniform_size;
+  GLenum uniform_type;
+  GLint nb_uniforms;
+  glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &nb_uniforms);
+  CHECK_ERROR("glGetProgramiv");
+
+  for (int i = 0; i < nb_uniforms; i++) {
+    glGetActiveUniform(program, i, uniform_name_max_length, NULL, &uniform_size, &uniform_type, uniform_name);
+    CHECK_ERROR("glGetActiveUniform");
+    std::cout << "UNIFORM " << i << ": " << uniform_name << " size:" << uniform_size << std::endl;
+  }
+
   for (json::iterator it = j.begin(); it != j.end(); ++it) {
     std::string uniformName = it.key();
     json uniformInfo = it.value();
@@ -237,6 +254,8 @@ int setUniformsFromJSON(const std::string& jsonFilename, const GLuint& program) 
     }
     CHECK_ERROR("After uniform initialisation");
   }
+
+  delete [] uniform_name;
 
   return EXIT_SUCCESS;
 }
