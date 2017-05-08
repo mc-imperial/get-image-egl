@@ -57,15 +57,30 @@ bool readFile(const std::string& fileName, std::string& contentsOut) {
   return true;
 }
 
-void printProgramError(GLuint program) {
+void printShaderError(GLuint shader) {
   GLint length = 0;
-  glGetShaderiv(program, GL_INFO_LOG_LENGTH, &length);
+  glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
   // The maxLength includes the NULL character
 
   std::vector<GLchar> errorLog((size_t) length, 0);
 
-  glGetShaderInfoLog(program, length, &length, &errorLog[0]);
+  glGetShaderInfoLog(shader, length, &length, &errorLog[0]);
+  if(length > 0) {
+    std::string s(&errorLog[0]);
+    std::cout << s << std::endl;
+  }
+}
+
+void printProgramError(GLuint program) {
+  GLint length = 0;
+  glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+
+  // The maxLength includes the NULL character
+
+  std::vector<GLchar> errorLog((size_t) length, 0);
+
+  glGetProgramInfoLog(program, length, &length, &errorLog[0]);
   if(length > 0) {
     std::string s(&errorLog[0]);
     std::cout << s << std::endl;
@@ -400,7 +415,7 @@ int main(int argc, char* argv[]) {
   glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &compileOk);
   if (!compileOk) {
     std::cerr << "Error compiling fragment shader." << std::endl;
-    printProgramError(program);
+    printShaderError(fragmentShader);
     return COMPILE_ERROR_EXIT_CODE;
   }
   std::cerr << "Fragment shader compiled successfully." << std::endl;
@@ -436,7 +451,7 @@ int main(int argc, char* argv[]) {
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &compileOk);
   if (!compileOk) {
     std::cerr << "Error compiling vertex shader." << std::endl;
-    printProgramError(program);
+    printShaderError(vertexShader);
     return EXIT_FAILURE;
   }
   std::cerr << "Vertex shader compiled successfully." << std::endl;
