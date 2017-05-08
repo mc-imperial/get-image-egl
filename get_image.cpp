@@ -127,6 +127,9 @@ int render(
   return EXIT_SUCCESS;
 }
 
+/*---------------------------------------------------------------------------*/
+// JSON
+
 template<typename T>
 T *getArray(const json& j) {
   T *a = new T[j.size()];
@@ -237,6 +240,8 @@ int setUniformsFromJSON(const std::string& jsonFilename, const GLuint& program) 
 
   return EXIT_SUCCESS;
 }
+
+/*---------------------------------------------------------------------------*/
 
 int main(int argc, char* argv[]) {
 
