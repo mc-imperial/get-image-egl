@@ -16,6 +16,9 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+static const int WIDTH = 256;
+static const int HEIGHT = 256;
+
 #define COMPILE_ERROR_EXIT_CODE (101)
 #define LINK_ERROR_EXIT_CODE (102)
 #define RENDER_ERROR_EXIT_CODE (103)
@@ -144,6 +147,43 @@ T *getArray(const json& j) {
   funcname(uniformloc, jsonarray.size(), a); \
   delete [] a
 
+void setJSONDefaultEntries(json& j) {
+
+  if (j.count("injectionSwitch") == 0) {
+    std::cerr << "Warning: uniform injectionSwitch not found in JSON, using default value" << std::endl;
+    j["injectionSwitch"] = {
+      {"func", "glUniform2f"},
+      { "args", { 0.0f, 1.0f }}
+    };
+  }
+
+  if (j.count("time") == 0) {
+    std::cerr << "Warning: uniform time not found in JSON, using default value" << std::endl;
+    j["time"] = {
+      {"func", "glUniform1f"},
+      { "args", { 0.0f }}
+    };
+  }
+
+
+  if (j.count("mouse") == 0) {
+    std::cerr << "Warning: uniform mouse not found in JSON, using default value" << std::endl;
+    j["mouse"] = {
+      {"func", "glUniform2f"},
+      { "args", { 0.0f, 0.0f }}
+    };
+  }
+
+  if (j.count("resolution") == 0) {
+    std::cerr << "Warning: uniform resolution not found in JSON, using default value" << std::endl;
+    j["resolution"] = {
+      {"func", "glUniform2f"},
+      { "args", { float(WIDTH), float(HEIGHT) }}
+    };
+  }
+
+}
+
 int setUniforms(const GLuint& program, const std::string& fragment_shader) {
   GLint nbUniforms;
   glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &nbUniforms);
@@ -167,8 +207,7 @@ int setUniforms(const GLuint& program, const std::string& fragment_shader) {
   }
   json j = json::parse(jsonContent);
 
-  // TODO: add a few defaults, if not present: injectionSwith,
-  // resolution. Emit warnings if doing so.
+  setJSONDefaultEntries(j);
 
   for (int i = 0; i < nbUniforms; i++) {
     glGetActiveUniform(program, i, uniformNameMaxLength, NULL, &uniformSize, &uniformType, uniformName);
@@ -282,12 +321,9 @@ int main(int argc, char* argv[]) {
   EGLContext context = 0;
   EGLSurface surface = 0;
 
-  const int width = 256;
-  const int height = 256;
-
   bool res = init_gl(
-      width,
-      height,
+      WIDTH,
+      HEIGHT,
       display,
       config,
       context,
@@ -472,8 +508,8 @@ int main(int argc, char* argv[]) {
   result = render(
       display,
       surface,
-      width,
-      height,
+      WIDTH,
+      HEIGHT,
       animate,
       numFrames,
       saved,
@@ -490,10 +526,10 @@ int main(int argc, char* argv[]) {
 //  if(numFrames == DELAY && !saved) {
   std::cerr << "Capturing frame." << std::endl;
   saved = true;
-  unsigned uwidth = (unsigned int) width;
-  unsigned uheight = (unsigned int) height;
+  unsigned uwidth = (unsigned int) WIDTH;
+  unsigned uheight = (unsigned int) HEIGHT;
   std::vector<std::uint8_t> data(uwidth * uheight * CHANNELS);
-  glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, &data[0]);
+  glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, &data[0]);
   CHECK_ERROR("After glReadPixels");
   std::vector<std::uint8_t> flipped_data(uwidth * uheight * CHANNELS);
   for (unsigned int h = 0; h < uheight ; h++)
