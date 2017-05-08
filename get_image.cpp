@@ -128,7 +128,7 @@ int render(
 }
 
 /*---------------------------------------------------------------------------*/
-// JSON
+// Initialisation of uniforms
 
 template<typename T>
 T *getArray(const json& j) {
@@ -144,33 +144,46 @@ T *getArray(const json& j) {
   funcname(uniformloc, jsonarray.size(), a); \
   delete [] a
 
-int setUniformsFromJSON(const std::string& jsonFilename, const GLuint& program) {
+int setUniforms(const GLuint& program, const std::string& fragment_shader) {
+  GLint nbUniforms;
+  glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &nbUniforms);
+  CHECK_ERROR("glGetProgramiv");
+  if (nbUniforms == 0) {
+    return EXIT_SUCCESS;
+  }
+
+  GLint uniformNameMaxLength = 0;
+  glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &uniformNameMaxLength);
+  CHECK_ERROR("glGetProgramiv");
+  GLchar *uniformName = new GLchar[uniformNameMaxLength];
+  GLint uniformSize;
+  GLenum uniformType;
+
+  std::string jsonFilename(fragment_shader);
+  jsonFilename.replace(jsonFilename.end()-4, jsonFilename.end(), "json");
   std::string jsonContent;
   if (!readFile(jsonFilename, jsonContent)) {
     return EXIT_FAILURE;
   }
   json j = json::parse(jsonContent);
 
+  // TODO: add a few defaults, if not present: injectionSwith,
+  // resolution. Emit warnings if doing so.
 
-  GLint uniform_name_max_length = 0;
-  glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &uniform_name_max_length);
-  CHECK_ERROR("glGetProgramiv");
-  GLchar *uniform_name = new GLchar[uniform_name_max_length];
-  GLint uniform_size;
-  GLenum uniform_type;
-  GLint nb_uniforms;
-  glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &nb_uniforms);
-  CHECK_ERROR("glGetProgramiv");
-
-  for (int i = 0; i < nb_uniforms; i++) {
-    glGetActiveUniform(program, i, uniform_name_max_length, NULL, &uniform_size, &uniform_type, uniform_name);
+  for (int i = 0; i < nbUniforms; i++) {
+    glGetActiveUniform(program, i, uniformNameMaxLength, NULL, &uniformSize, &uniformType, uniformName);
     CHECK_ERROR("glGetActiveUniform");
-    std::cout << "UNIFORM " << i << ": " << uniform_name << " size:" << uniform_size << std::endl;
-  }
+    std::cout << "UNIFORM " << i << ": " << uniformName << " size:" << uniformSize << std::endl;
 
-  for (json::iterator it = j.begin(); it != j.end(); ++it) {
-    std::string uniformName = it.key();
-    json uniformInfo = it.value();
+    if (j.count(uniformName) == 0) {
+      std::cerr << "Error: missing JSON entry for uniform: " << uniformName << std::endl;
+      return EXIT_FAILURE;
+    }
+    if (j.count(uniformName) > 1) {
+      std::cerr << "Error: more than one JSON entry for uniform: " << uniformName << std::endl;
+      return EXIT_FAILURE;
+    }
+    json uniformInfo = j[uniformName];
 
     // Check presence of func and args entries
     if (uniformInfo.find("func") == uniformInfo.end()) {
@@ -183,11 +196,11 @@ int setUniformsFromJSON(const std::string& jsonFilename, const GLuint& program) 
     }
 
     // Get uniform location
-    GLint uniformLocation = glGetUniformLocation(program, uniformName.c_str());
+    GLint uniformLocation = glGetUniformLocation(program, uniformName);
     CHECK_ERROR("After glGetUniformLocation");
     if (uniformLocation == -1) {
-      std::cerr << "Warning: Cannot find uniform named: " << uniformName << std::endl;
-      continue;
+      std::cerr << "Error: Cannot find uniform named: " << uniformName << std::endl;
+      return EXIT_FAILURE;
     }
 
     // Dispatch to matching init function
@@ -249,13 +262,13 @@ int setUniformsFromJSON(const std::string& jsonFilename, const GLuint& program) 
     }
 
     else {
-      std::cerr << "Error: unknown uniform init func: " << uniformFunc << std::endl;
+      std::cerr << "Error: unknown/unsupported uniform init func: " << uniformFunc << std::endl;
       return EXIT_FAILURE;
     }
     CHECK_ERROR("After uniform initialisation");
   }
 
-  delete [] uniform_name;
+  delete [] uniformName;
 
   return EXIT_SUCCESS;
 }
@@ -447,9 +460,7 @@ int main(int argc, char* argv[]) {
   glVertexAttribPointer(posAttribLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer);
 
-  std::string jsonFilename(fragment_shader);
-  jsonFilename.replace(jsonFilename.end()-4, jsonFilename.end(), "json");
-  int result = setUniformsFromJSON(jsonFilename, program);
+  int result = setUniforms(program, fragment_shader);
   if(result != EXIT_SUCCESS) {
     return EXIT_FAILURE;
   }
