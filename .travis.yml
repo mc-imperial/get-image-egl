@@ -5,14 +5,6 @@ env:
   global:
     - CMAKE_GENERATOR="Unix Makefiles" CMAKE_OPTIONS=" "
 
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - gcc-4.9
-    - g++-4.9
-
 matrix:
   include:
     - os: linux
@@ -23,10 +15,17 @@ matrix:
       osx_image: xcode7.3
       env: BUILD_PLATFORM="Darwin-x64"
 
+before_install:
+  # GCC 4.9
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  - sudo apt-get update -qq
+
 install:
   - buildscripts/1-install-deps-travis.sh
   - export PATH="/data/bin:$PATH"
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
+  # GCC 4.9
+  - sudo apt-get install -qq g++-4.9
+  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90
 
 script:
   - CMAKE_BUILD_TYPE=Debug buildscripts/2-build-travis.sh
