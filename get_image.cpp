@@ -42,8 +42,13 @@ const char* vertex_shader_wo_version =
 "attribute vec2 vert2d;\n"
 "void main(void) {\n"
 "  gl_Position = vec4(vert2d, 0.0, 1.0);\n"
-"}";
+"}\n";
 
+const char* vertex_shader_v300es =
+"in vec3 aVertexPosition;\n"
+"void main(void) {\n"
+"    gl_Position = vec4(aVertexPosition, 1.0);\n"
+"}\n";
 
 bool readFile(const std::string& fileName, std::string& contentsOut) {
   std::ifstream ifs(fileName.c_str());
@@ -436,7 +441,13 @@ int main(int argc, char* argv[]) {
     } else {
       std::cerr << "Warning: Could not find #version string of fragment shader." << std::endl;
     }
-    ss << vertex_shader_wo_version;
+    // the vertex shader is different for versio 300 es
+    i = fragContents.find("300");
+    if (i != std::string::npos) {
+        ss << vertex_shader_v300es;
+    } else {
+        ss << vertex_shader_wo_version;
+    }
     vertexContents = ss.str();
   } else {
     if(!readFile(vertex_shader, vertexContents)) {
