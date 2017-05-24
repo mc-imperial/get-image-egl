@@ -327,6 +327,22 @@ int setUniforms(const GLuint& program, const std::string& fragment_shader) {
   return EXIT_SUCCESS;
 }
 
+class TerminateEGLAtExit{
+  EGLDisplay display;
+
+  public:
+    TerminateEGLAtExit(EGLDisplay);
+    ~TerminateEGLAtExit();
+};
+
+TerminateEGLAtExit::TerminateEGLAtExit(EGLDisplay display){
+  this->display = display;
+}
+
+TerminateEGLAtExit::~TerminateEGLAtExit(){
+  auto succeeded = eglTerminate(this->display);
+  assert(succeeded);
+}
 /*---------------------------------------------------------------------------*/
 
 int main(int argc, char* argv[]) {
@@ -348,6 +364,8 @@ int main(int argc, char* argv[]) {
   if(!res) {
     return EXIT_FAILURE;
   }
+
+  TerminateEGLAtExit cleanup_display = display;
 
   bool persist = false;
   bool animate = false;
