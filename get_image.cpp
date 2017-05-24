@@ -151,7 +151,7 @@ int render(
 template<typename T>
 T *getArray(const json& j) {
   T *a = new T[j.size()];
-  for (int i = 0; i < j.size(); i++) {
+  for (unsigned int i = 0; i < j.size(); i++) {
     a[i] = j[i];
   }
   return a;
