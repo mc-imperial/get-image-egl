@@ -35,7 +35,7 @@ Useful flags:
 
 Building the project uses CMake.
 
-First you must ensure you have the depdencies. There are scripts in buildscripts
+First you must ensure you have the dependencies. There are scripts in buildscripts
 intended to run on the CI that can also be used to build locally. You can run
 these as follows: 
 
@@ -51,7 +51,7 @@ On Linux or OSX:
 bash buildscripts/1-install-deps-travis.sh
 ```
 
-Alternativly on Ubuntu you can:
+Alternatively on Ubuntu you can:
 ```bash
 sudo apt-get install libgles2-mesa-dev
 ```
